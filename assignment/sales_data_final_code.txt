@@ -1,0 +1,96 @@
+use database demo_database;
+
+create or replace table ysr_sales_data_final(
+  order_id varchar(50),
+  order_date date,
+  ship_date date,
+  ship_mode	varchar(50),
+  customer_name varchar(50),
+  segment varchar(50),
+  state	varchar(50),
+  country varchar(50),
+  market varchar(50),
+  region varchar(50),
+  product_id varchar(50),
+  category	varchar(50),
+  sub_category	varchar(50),
+  product_name	varchar(200),
+  sales	number(10,2),
+  quantity int,
+  discount number(10,3),
+  profit number(20,7),
+  shipping_cost	number(20,2),
+  order_priority varchar(20),
+  year int
+  );
+  
+  describe table ysr_sales_data_final;
+  select * from ysr_sales_data_final;
+ 
+ --1 .SET PRIMARY KEY.
+
+  alter table ysr_sales_data_final
+  add  primary key(order_id);
+  
+ --2. CHECK THE ORDER DATE AND SHIP DATE TYPE AND THINK IN WHICH DATA TYPE YOU HAVE TO CHANGE.
+
+
+
+  
+  --3. EXTACT THE LAST NUMBER AFTER THE - AND CREATE OTHER COLUMN AND UPDATE IT.
+
+  create or replace table ysr_sales_data_final_copy as 
+  select * , substr(order_id,9) as order_id_last
+  from ysr_sales_data_final;
+  
+  select * from ysr_sales_data_final_copy;
+ 
+  
+  --4.  FLAG ,IF DISCOUNT IS GREATER THEN 0 THEN  YES ELSE FALSE AND PUT IT IN NEW COLUMN FRO EVERY ORDER ID.
+  
+  create or replace table ysr_sales_data_final_copy as 
+  select order_id,	order_date,	ship_date	,ship_mode	,customer_name,	segment,state,	
+  country , market,	region ,product_id,	category,	sub_category	,product_name	,sales	,quantity	,discount,	
+  case 
+  when discount > 0 then 'yes'
+  else 'no'
+  end as flag_discount ,
+   profit,	shipping_cost,	order_priority 
+   from ysr_sales_data_final;
+   
+
+--5.  FIND OUT THE FINAL PROFIT AND PUT IT IN COLUMN FOR EVERY ORDER ID
+
+
+
+
+--6.  FIND OUT HOW MUCH DAYS TAKEN FOR EACH ORDER TO PROCESS FOR THE SHIPMENT FOR EVERY ORDER ID.
+
+ select (ship_date - order_date) as number_of_days from ysr_sales_data_final;
+ 
+ alter table ysr_sales_data_final_copy
+ add column number_of_days int;
+ 
+  update ysr_sales_data_final_copy
+set number_of_days = (ship_date - order_date);
+
+select * from ysr_sales_data_final_copy;
+ 
+ 
+/*
+   7 . FLAG THE PROCESS DAY AS BY RATING IF IT TAKES LESS OR EQUAL 3  DAYS MAKE 5,
+   LESS OR EQUAL THAN 6 DAYS BUT MORE THAN 3 MAKE 4,LESS THAN 10 BUT MORE THAN 6 MAKE 3,
+   MORE THAN 10 MAKE IT 2 FOR EVERY ORDER ID.
+*/
+
+ create or replace table ysr_sales_data_final_copy as 
+ select * ,
+ case 
+ when number_of_days <= 3 then 5
+ when number_of_days <= 6 then 4
+ when number_of_days <= 10 then 3
+ else 2
+ end as flag_process_day
+ from  ysr_sales_data_final_copy;
+ 
+ select * from ysr_sales_data_final_copy;
